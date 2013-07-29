@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<meta charset="utf-8">
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<body>
+	Example stream
+	<ul>
+		<li><a href="/stream/AAPL">AAPL</a></li>
+		<li><a href="/stream/AOL">AOL</a></li>
+		<li><a href="/stream/GOOG">GOOG</a></li>
+		<li><a href="/stream/DROPBOX">DROPBOX</a></li>
+	</ul>
+	<section>
+		custom symbol name:
+		<input type="textarea" placeholder="symbol" />
+		<input type="button" value="GO" /> 
+	</section>
+
+	<script type="text/javascript">
+	$('input[type="button"]').click(function () {
+		document.location.pathname = '/stream/' + $('input[placeholder="symbol"]').val().toUpperCase();
+	});
+	</script>
+</body>
+</html>
