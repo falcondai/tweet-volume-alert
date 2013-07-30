@@ -1,0 +1,28 @@
+{
+  "name": "tweet-volume-alert",
+  "version": "0.0.0",
+  "description": "delivers realtime event notifications based on tweets",
+  "main": "app.js",
+  "dependencies": {
+    "express": "~3.3.4",
+    "socket.io": "~0.9.16"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/falcondai/tweet-volume-alert.git"
+  },
+  "keywords": [
+    "tweet",
+    "realtime",
+    "notification"
+  ],
+  "author": "Falcon Dai",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/falcondai/tweet-volume-alert/issues"
+  }
+}
