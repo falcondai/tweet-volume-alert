@@ -33,8 +33,10 @@ app.get('/stream/:symbol', function (req, res) {
 app.get('/inject/message', function (req, res) {
   // GET /inject/message?t=<message>
   // broadcast to everyone
-  if (!req.query.symbol)
+  if (!req.query.symbol) {
     res.send(400);
+    return ;
+  }
   console.log('announcing: %s', req.query.t);
   res.send(200);
   io.of('/' + req.query.symbol).emit('new announcement', {text: req.query.t});
@@ -42,8 +44,10 @@ app.get('/inject/message', function (req, res) {
 
 app.get('/inject/alert', function (req, res) {
   // GET /inject/alert?symbol=<company_symbol>&time=<timestamp_in_seconds>
-  if (!req.query.symbol)
+  if (!req.query.symbol) {
     res.send(400);
+    return ;
+  }
   req.query.symbol = req.query.symbol.toUpperCase();
   io.of('/alert').emit('new alert', {
     symbol: req.query.symbol,
@@ -54,8 +58,10 @@ app.get('/inject/alert', function (req, res) {
 
 app.get('/inject/per-minute-volume', function (req, res) {
   // GET /inject/per-minute-volume?symbol=<company_symbol>&volume=<count>&start_time=<timestamp_in_seconds>
-  if (!req.query.symbol)
+  if (!req.query.symbol) {
     res.send(400);
+    return ;
+  }
   req.query.symbol = req.query.symbol.toUpperCase();
   io.of('/' + req.query.symbol).emit('new volume', {
     volume: +req.query.volume,
@@ -66,11 +72,13 @@ app.get('/inject/per-minute-volume', function (req, res) {
 
 app.get('/inject/tweet-id', function (req, res) {
   // GET /inject/tweet-id?symbol=<company_symbol>&tweet_id=<id>
-  if (!req.query.symbol)
+  if (!req.query.symbol) {
     res.send(400);
+    return ;
+  }
   req.query.symbol = req.query.symbol.toUpperCase();
   http.get({
-    host: 'api.twitter.com',
+    hostname: 'api.twitter.com',
     path: '/1/statuses/oembed.json?omit_script=true&id=' + req.query.tweet_id
   }, function(response) {
     var buf = '';
@@ -81,6 +89,7 @@ app.get('/inject/tweet-id', function (req, res) {
       .on('end', function() {
         htmlText = JSON.parse(buf).html;
         if (htmlText)
+        	console.log(htmlText);
           io.of('/' + req.query.symbol).emit('new tweet', {
             tid: +req.query.tweet_id,
             html: htmlText
@@ -93,18 +102,8 @@ app.get('/inject/tweet-id', function (req, res) {
   res.send(200);
 });
 
-app.get('/tweet', function (req, res) {
-  // return the json object
-  
-  http.get('http://api.twitter.com/1/statuses/oembed.json?omit_script=true&id=' + req.query.tid, function(r) {
-    r.on('data', function(data) {
-      res.send(JSON.parse(data));
-    });
-  });
-});
-
 app.get('/ringtone', function (req, res) {
-  res.sendfile(__dirname + '/ringtone');
+  res.type('wav').sendfile(__dirname + '/ringtone');
 });
 
 app.get('/favicon.ico', function (req, res) {
@@ -115,4 +114,3 @@ app.get('/icon.png', function (req, res) {
   res.sendfile(__dirname + '/icon.png');
 });
 
-// websocket server
