@@ -1,6 +1,6 @@
 <head>
 <meta charset="utf-8">
-<title>AAPL volume alert</title>
+<title>stream page</title>
 <style>
 	body {
 		margin: 0;
@@ -60,7 +60,7 @@
 	<section id="tweet-stream"></section>
 
 	<script src="/socket.io/socket.io.js"></script>
-	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script src="//platform.twitter.com/widgets.js"></script>
 	<script type="text/javascript">
 	// Set the name of the hidden property and the change event for visibility
@@ -80,6 +80,11 @@
 	}
 	</script>
 	<script>
+	var pathParts = document.location.pathname.split('/'),
+			symbol = pathParts[pathParts.length-1];
+	$('title').text(symbol + ' stream');
+	</script>
+	<script>	
 	var flash = {
 		version: '0.0.0',
 		titles: [$('title').text()],
@@ -258,11 +263,10 @@
 	</script>
 
 	<script>
-	var pathParts = document.location.pathname.split('/');
 
 	// realtime streams
 	var alert = io.connect(document.location.origin + '/alert'),
-			feed = io.connect(document.location.origin + '/' + pathParts[pathParts.length-1]);
+			feed = io.connect(document.location.origin + '/' + symbol);
 
   feed.on('new announcement', function (data) {
   	console.log(data);
