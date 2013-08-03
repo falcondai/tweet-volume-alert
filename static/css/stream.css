@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+.announcement {
+  border: 2px #444;
+  background-color: #aaa;
+  display: none;
+  position: fixed;
+  top: 50px;
+}
+#panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+}
+#tweet-stream {
+  background-color: #555;
+  margin-right: 0px;
+  margin-left: auto;
+  padding: 10px;
+  border-left: 3px solid #bbb;
+  width: 400px;
+}
+blockquote.twitter-tweet {
+  display: none;
+}

@@ -1,0 +1,6 @@
+export PRODUCTION_HOST=54.235.161.102
+
+export PRODUCTION_PORT=8000
+export DEVELOPMENT_PORT=8000
+
+export NODE_ENV=development

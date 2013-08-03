@@ -2,46 +2,66 @@ var http = require('http'),
     express = require('express'),
     app = express(),
     server = require('http').createServer(app),
-    io = require('socket.io').listen(server);
-
-server.listen(43988);
-console.log('volume alert listening at : %s', 'http://localhost:43988/');
+    io = require('socket.io').listen(server),
+    config = require('./config');
 
 // utility functions
 function getTweet(tid, callback) {
-  http.get('http://api.twitter.com/1/statuses/oembed.json?omit_script=true&id=' + tid, function(res) {
-    res.on('data', function(data) {
-      callback(JSON.parse(data));
-    });
+  http.get({
+    hostname: 'api.twitter.com',
+    path: '/1/statuses/oembed.json?omit_script=true&id=' + tid
+  }, function(response) {
+    var buf = '';
+    response
+      .on('data', function(chunk) {
+        buf += chunk;
+      })
+      .on('end', function() {
+        htmlText = JSON.parse(buf).html;
+        if (htmlText)
+          console.log(htmlText);
+          callback(htmlText);
+      })
+      .on('error', function(e) {
+        console.log("Got error: " + e.message);
+      });
   });
 }
 
-// http server
-app.use(express.logger());
+// middlewares
+if ('development' == app.get('env'))
+  app.use(express.logger('dev'));
+else 
+  app.use(express.logger());
 
+app.use(require('stylus').middleware(__dirname + '/static'));
+app.use(express.static(__dirname + '/static'))
+
+app.use('/inject', function (req, res, next) {
+  // check symbol query parameter
+  if (req.query.symbol)
+    next();
+  res.send(400);
+});
+
+// routes
 app.get('/', function (req, res) {
-  res.sendfile(__dirname + '/index.html');
+  res.render('index.jade', {
+    symbols: config.symbols
+  });
 });
 
 app.get('/stream/:symbol', function (req, res) {
   if (req.params.symbol != req.params.symbol.toUpperCase())
+    // redirect user to the canonical URL
     res.redirect('/stream/' + req.params.symbol.toUpperCase());
   else
-    res.sendfile(__dirname + '/stream.html');
+    res.render('stream.jade', {
+      symbol: req.params.symbol
+    });
 });
 
-app.get('/inject/message', function (req, res) {
-  // GET /inject/message?t=<message>
-  // broadcast to everyone
-  if (!req.query.symbol) {
-    res.send(400);
-    return ;
-  }
-  console.log('announcing: %s', req.query.t);
-  res.send(200);
-  io.of('/' + req.query.symbol).emit('new announcement', {text: req.query.t});
-});
-
+// inject APIs
 app.get('/inject/alert', function (req, res) {
   // GET /inject/alert?symbol=<company_symbol>&time=<timestamp_in_seconds>
   if (!req.query.symbol) {
@@ -77,40 +97,38 @@ app.get('/inject/tweet-id', function (req, res) {
     return ;
   }
   req.query.symbol = req.query.symbol.toUpperCase();
-  http.get({
-    hostname: 'api.twitter.com',
-    path: '/1/statuses/oembed.json?omit_script=true&id=' + req.query.tweet_id
-  }, function(response) {
-    var buf = '';
-    response
-      .on('data', function(chunk) {
-        buf += chunk;
-      })
-      .on('end', function() {
-        htmlText = JSON.parse(buf).html;
-        if (htmlText)
-        	console.log(htmlText);
-          io.of('/' + req.query.symbol).emit('new tweet', {
-            tid: +req.query.tweet_id,
-            html: htmlText
-          });
-      })
-      .on('error', function(e) {
-        console.log("Got error: " + e.message);
-      });
+  getTweet(req.query.tweet_id, function (tweetHtml) {
+    io.of('/' + req.query.symbol).emit('new tweet', {
+      tid: req.query.tweet_id,
+      html: tweetHtml
+    });
   });
   res.send(200);
 });
 
-app.get('/ringtone', function (req, res) {
-  res.type('wav').sendfile(__dirname + '/ringtone');
-});
+// socket.io config
+if ('development' != process.env.NODE_ENV) {
+  io.enable('browser client minification');  // send minified client
+  io.enable('browser client etag');          // apply etag caching logic based on version number
+  io.enable('browser client gzip');          // gzip the file
+  io.set('log level', 1);                    // reduce logging
 
-app.get('/favicon.ico', function (req, res) {
-  res.sendfile(__dirname + '/icon.png');
-});
+  // enable all transports (optional if you want flashsocket support, please note that some hosting
+  // providers do not allow you to create servers that listen on a port different than 80 or their
+  // default port)
+  io.set('transports', [
+      'websocket'
+    , 'htmlfile'
+    , 'xhr-polling'
+    , 'jsonp-polling'
+  ]);
+}
 
-app.get('/icon.png', function (req, res) {
-  res.sendfile(__dirname + '/icon.png');
-});
+// template config
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
 
+// start
+var port = ('development' == process.env.NODE_ENV)? process.env.DEVELOPMENT_PORT: process.env.PRODUCTION_PORT;
+server.listen(port);
+console.log('volume alert listening at port: %s', port);

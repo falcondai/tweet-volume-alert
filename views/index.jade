@@ -1,0 +1,24 @@
+doctype 5
+html
+  meta(charset='utf-8')
+  script(src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js')
+  link(rel='stylesheet', href='/css/common.css')
+  title TwiThinks Stock Tracker 
+  :stylus
+      body
+        padding 0
+      ul
+        list-style-type square
+
+  body
+    h1 TwiThinks Stock Tracker
+    p (pre-alpha version)
+    p.
+      This tool aims to detect market-moving events through tweets, 
+      status messages on Twitter and deliver real-time alerts upon detection.
+    section currently available stocks:
+      ul
+        each company, symbol in symbols
+          li 
+            a(href='/stream/' + symbol)= company
+
