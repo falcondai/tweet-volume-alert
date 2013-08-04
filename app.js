@@ -69,7 +69,7 @@ app.get('/inject/alert', function (req, res) {
     return ;
   }
   req.query.symbol = req.query.symbol.toUpperCase();
-  io.of('/alert').emit('new alert', {
+  io.of('/' + req.query.symbol).emit('new alert', {
     symbol: req.query.symbol,
     timestamp: +req.query.time * 1000
   });

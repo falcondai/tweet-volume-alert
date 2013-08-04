@@ -1,24 +1,163 @@
 doctype 5
 html
   meta(charset='utf-8')
-  script(src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js')
-  link(rel='stylesheet', href='/css/common.css')
   title TwiThinks Stock Tracker 
+  
+  link(rel='stylesheet', href='/css/common.css')
   :stylus
-      body
-        padding 0
-      ul
-        list-style-type square
+    .overview
+      font-size 1.2em 
+    ul
+      list-style-type square
+    abbr
+      border-bottom 1px dotted
+      cursor help
+    .button, .toggle
+      display inline-block
+      padding 5px
+      margin 5px
+      border 2px solid #666
+      border-radius 3px
+      cursor pointer
+    .toggle.on
+      background-color steelblue
+    span.button
+      margin 0
+      padding 2px
 
   body
     h1 TwiThinks Stock Tracker
-    p (pre-alpha version)
-    p.
-      This tool aims to detect market-moving events through tweets, 
-      status messages on Twitter and deliver real-time alerts upon detection.
-    section currently available stocks:
+    section (version 0.1.0-alpha)
+    p.overview
+      | This tool aims to detect market-moving events through 
+      abbr(title='status messages on Twitter') tweets
+      | , and deliver real-time alerts upon detection.
+
+    section
+      h2 Note
+
+      | You will need 
+      a(href='//www.google.com/chrome/') Google Chrome
+      |  on a desktop/laptop to see the full functionality. 
+      | We observed that AdBlock or AdBlock Plus disrupted some functionality of the site, please turn them off for this domain.
+
+    section
+      h2 Setup
+      p Please turn on the notification for the site (you will need to grant permission in a popup once for all). 
+      p If you don't want to see them anymore, you can turn them off :(
+      p 
+        | Click 
+        span.button#try-alert Try Alert
+        |  to hear the chime for event alerts. (We are always looking for better chimes, let us know you can make us one!)
+
+      .notification.toggle Toggle Desktop Notifications
+      .alert.toggle Toggle Alerts
+
+    section 
+      h2 Available stocks
       ul
         each company, symbol in symbols
           li 
             a(href='/stream/' + symbol)= company
 
+      | We are adding more to this list, let us know what you want to see next.
+
+    script(src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js')
+    script(src='/js/draftHtml5Apis.js')
+    script.
+      function getPref (key, defaultValue) {
+        if (localStorage.getItem(key) == undefined 
+          && arguments.length > 1)
+          localStorage.setItem(key, defaultValue);
+        return localStorage.getItem(key);
+      }
+
+      function setPref (key, value) {
+        localStorage.setItem(key, value);
+      }
+
+      function loadAudio (ctx, url, callback) {
+        var request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.responseType = 'arraybuffer';
+        // decode asynchronously
+        request.onload = function() {
+          ctx.decodeAudioData(request.response, function(buf) {
+            callback(buf);
+          });
+        }
+        request.send();
+      }
+
+      function playAudio(ctx, buffer) {
+        var source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        source.start(0);
+      }
+
+    script.
+      function updateNotificationToggle () {
+        var toggle;
+        if (window.Notifications 
+          && window.Notifications.checkPermission() == 0 
+          && getPref('show notifications', 'on') == 'on')
+          toggle = true;
+        else
+          toggle = false;
+        $('.notification.toggle').toggleClass('on', toggle);
+      }
+
+      function updateAlertToggle () {
+        var toggle;
+        if (getPref('mute alerts', 'off') == 'off')
+          toggle = true;
+        else
+          toggle = false;
+        $('.alert.toggle').toggleClass('on', toggle);
+      }
+      
+    script.
+      draftApis.normalize(['Notifications', 'AudioContext', 'localStorage'], function (missing) {
+        if (missing.length > 0)
+          alert('Some HTML5 APIs are not supported in this browser, the notification functionality will be limited.');
+      });
+
+      // init audio
+      var actx, chime;
+      if (window.AudioContext) {
+        actx = new window.AudioContext();
+        loadAudio(actx, '/sound/80921__justinbw__buttonchime02up.wav', function (buffer) {
+          chime = buffer;
+          console.log('chime buffer loaded.');
+        });
+      }
+
+      // wire up UI
+      $('.notification.toggle').click(function () {
+        if (window.Notifications)
+          if (window.Notifications.checkPermission() != 0) {
+            window.Notifications.requestPermission(function() {
+              setPref('show notifications', window.Notifications.checkPermission() == 0 ? 'on' : 'off');
+              console.log('permission granted: ', window.Notifications.checkPermission() == 0);
+            });
+          }
+          else if (window.Notifications.checkPermission() == 0) {
+            setPref('show notifications', getPref('show notifications', 'on') == 'on' ? 'off' : 'on');
+          }
+        updateNotificationToggle();
+      });
+
+      $('.alert.toggle').click(function () {
+        setPref('mute alerts', getPref('mute alerts', 'on') == 'on' ? 'off' : 'on');
+        updateAlertToggle();
+      });
+
+      $('#try-alert').click(function () {
+        if (actx && chime)
+          playAudio(actx, chime);
+      });
+
+      // update toggles
+      updateNotificationToggle();
+      updateAlertToggle();

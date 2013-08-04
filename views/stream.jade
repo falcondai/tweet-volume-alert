@@ -3,7 +3,35 @@ html
   head
     meta(charset='utf-8')
     title #{symbol} stream
-    link(rel='stylesheet', href='/css/stream.css')
+    //- link(rel='stylesheet', href='/css/stream.css')
+    :stylus
+      body
+        margin: 0
+        padding: 0
+        font-family: sans-serif
+
+      .announcement
+        border: 2px #444
+        background-color: #aaa
+        display: none
+        position: fixed
+        top: 50px
+
+      #panel 
+        position: fixed
+        top: 0
+        bottom: 0
+
+      #tweet-stream 
+        background-color: #555
+        margin-right: 0px
+        margin-left: auto
+        padding: 10px
+        border-left: 3px solid #bbb
+        width: 400px
+
+      blockquote.twitter-tweet 
+        display: none
   body
     section#panel
       ul#actions
@@ -28,26 +56,11 @@ html
 
     section#tweet-stream
 
-    script(src='/socket.io/socket.io.js')
     script(src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js')
     script(src='//platform.twitter.com/widgets.js')
-
-    script(type='text/javascript').
-      // Set the name of the hidden property and the change event for visibility
-      var hidden, visibilityChange;
-      if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support
-        hidden = "hidden";
-        visibilityChange = "visibilitychange";
-      } else if (typeof document.mozHidden !== "undefined") {
-        hidden = "mozHidden";
-        visibilityChange = "mozvisibilitychange";
-      } else if (typeof document.msHidden !== "undefined") {
-        hidden = "msHidden";
-        visibilityChange = "msvisibilitychange";
-      } else if (typeof document.webkitHidden !== "undefined") {
-        hidden = "webkitHidden";
-        visibilityChange = "webkitvisibilitychange";
-      }
+    script(src='/socket.io/socket.io.js')
+    script(src='/js/visibility.js')
+      
     script.
       var pathParts = document.location.pathname.split('/'),
           symbol = pathParts[pathParts.length-1];
@@ -175,16 +188,16 @@ html
       load_audio(actx, '/sound/80921__justinbw__buttonchime02up.wav');
       // generate notification
       function notify(symbol) {
-      if (_show && document[hidden]) {
-        var n = new Notification(symbol + '-alert', {
-            body: 'possible market movement detected from ' + symbol + ' related tweets.',
-            tag: symbol
-        });
-        n.onclick = click_n;
-        n.show();
-      }
-      if (!mute)
-        play_audio(actx, ringtone);
+        if (_show && document[hidden]) {
+          var n = new Notification(symbol + ' alert', {
+              body: 'possible market movement detected from ' + symbol + ' related tweets.',
+              tag: symbol
+          });
+          n.onclick = click_n;
+          n.show();
+        }
+        if (!mute)
+          play_audio(actx, ringtone);
         flash.flash('alert: ' + symbol);
       }
       // wire up UI
@@ -212,8 +225,7 @@ html
     
     script.
       // realtime streams
-      var alert = io.connect(document.location.origin + '/alert'),
-          feed = io.connect(document.location.origin + '/' + symbol);
+      var feed = io.connect(document.location.origin + '/' + symbol);
     
       feed.on('new announcement', function (data) {
         console.log(data);
@@ -239,7 +251,7 @@ html
         $('#volume-time').text(new Date(data.timestamp));
       });
       
-      alert.on('new alert', function (data) {
+      feed.on('new alert', function (data) {
         console.log(data);
         $('#alert').text(new Date(data.timestamp));
         // notifications
