@@ -4,10 +4,13 @@ html
     meta(charset='utf-8')
     title #{symbol} stream
     :stylus
+      @css {
+        @import url(http://fonts.googleapis.com/css?family=Droid+Sans:400);
+      }
       body
         margin 0
         padding 0
-        font-family sans-serif
+        font-family 'Droid Sans', sans-serif
         background linear-gradient(to right, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.05) 20%,rgba(0,0,0,0.05) 80%,rgba(0,0,0,0.1) 100%), url('/img/noise.png'); 
 
       blockquote.twitter-tweet 
