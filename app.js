@@ -44,7 +44,7 @@ app.use('/inject', function (req, res, next) {
   res.send(400);
 });
 
-// routes
+// views
 app.get('/', function (req, res) {
   res.render('index.jade', {
     symbols: config.symbols

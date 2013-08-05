@@ -3,257 +3,200 @@ html
   head
     meta(charset='utf-8')
     title #{symbol} stream
-    //- link(rel='stylesheet', href='/css/stream.css')
     :stylus
       body
-        margin: 0
-        padding: 0
-        font-family: sans-serif
-
-      .announcement
-        border: 2px #444
-        background-color: #aaa
-        display: none
-        position: fixed
-        top: 50px
-
-      #panel 
-        position: fixed
-        top: 0
-        bottom: 0
-
-      #tweet-stream 
-        background-color: #555
-        margin-right: 0px
-        margin-left: auto
-        padding: 10px
-        border-left: 3px solid #bbb
-        width: 400px
+        margin 0
+        padding 0
+        font-family sans-serif
+        background linear-gradient(to right, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.05) 20%,rgba(0,0,0,0.05) 80%,rgba(0,0,0,0.1) 100%), url('/img/noise.png'); 
 
       blockquote.twitter-tweet 
-        display: none
-  body
-    section#panel
-      ul#actions
-        li
-          a#opt-in(href='#') opt in for desktop notificaitons
-        li
-          a#opt-out(href='#') opt out
-        li
-          a#new-notification(href='#') new notification
-        li
-          a#ringtone(href='#') play ringtone
-      section
-        | Tweet volume:
-        span#volume
-        br
-        | updated at 
-        span#volume-time
-      section
-        | Latest received alert:
-        br
-        span#alert
+        display none
 
-    section#tweet-stream
+      #tweet-stream 
+        margin-right auto
+        margin-left auto
+        width 500px
+
+        .faucet, .sink
+          width @width - 3px // compensate for embedded tweets size problem
+          text-align center
+          padding 5px 0 5px 0
+          cursor pointer
+          background-color rgba(steelblue, 0.6)
+          color white
+
+        .faucet
+          position fixed
+          top 0
+          border-bottom-left-radius 5px
+          border-bottom-right-radius @border-bottom-left-radius
+
+        .sink
+          display none
+          border-top-left-radius 5px
+          border-top-right-radius @border-top-left-radius
+
+        .queue
+          margin-top 40px
+      
+      #dark
+        display none
+
+      @media (max-width: 500px)
+        #tweet-stream
+          width 95%
+          .faucet
+            width @width
+          .sink
+            width 100%
+
+      @media (max-width: 260px)
+        #tweet-stream
+          width 250px
+          padding 5px
+          .faucet
+            width @width
+          .sink
+            width 100%
+  body
+    #tweet-stream
+      .faucet waiting for tweets...
+      .queue
+      .sink # of old tweets
+
+    #dark
 
     script(src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js')
     script(src='//platform.twitter.com/widgets.js')
     script(src='/socket.io/socket.io.js')
     script(src='/js/visibility.js')
+    script(src='/js/flash.js')
+    script(src='/js/utils.js')
+    script(src='/js/draftHtml5Apis.js')
       
     script.
-      var pathParts = document.location.pathname.split('/'),
-          symbol = pathParts[pathParts.length-1];
-
-    script.
-      var flash = {
-        version: '0.0.0',
-        titles: [$('title').text()],
-        current_title_index: 0,
-        flash_id: null,
-        interval: 1000,
-        element: $('title'),
-      };
-      // low-level methods
-      flash.pause = function() {
-        if (this.flash_id) {
-          clearInterval(this.flash_id);
-          this.flash_id = null;
-        }
-      };
-
-      flash.next = function() {
-        // console.log(this);
-        this.current_title_index = (this.current_title_index + 1) % this.titles.length;
-        this.element.text(this.titles[this.current_title_index]);
-      };
-
-      // high-level methods
-      flash.cycle = function(interval) {
-        if (!interval)
-        interval = this.interval;
-        this.pause();
-        _this = this;
-        this.flash_id = setInterval(function() { _this.next(); }, interval);
-      };
-
-      flash.stop_and_restore = function() {
-        this.pause();
-        this.titles.splice(1, this.titles.length-1);
-        this.element.text(this.titles[0]);
-      };
-
-      flash.flash = function(title, interval) {
-        if (!interval)
-        interval = this.interval;
-        this.titles.push(title);
-        this.cycle(interval);
-      };
-    
-    script(type='text/javascript').
-      function init() {
-        // notification API setup
-        window.Notifications = window.Notifications || window.webkitNotifications;
-        if (!window.Notifications)
-          alert('Notifications API is not supported in this browser. Notification functionality will be limited.');
-        // Audio API setup
-        window.AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!window.AudioContext)
-          alert('Web Audio API is not supported in this browser. Notifications will be muted.');
-      }
-
-      function trim(text, lineWidth) {
-        //- if (text.length < lineWidth)
-        //- return text;
-        //- var lines = [];
-        //- for (var i=0; i<text.length/lineWidth+1; i++) {
-        //-   lines.push(text.substr(i*lineWidth, lineWidth));
-        //- }
-        //- return lines.join('\\n');
-        return text;
-      }
-
-      function request_permission(callback) {
-        if (window.Notifications.checkPermission() != 0)
-          window.Notifications.requestPermission(function() {
-            var p = window.Notifications.checkPermission();
-            console.log('permission status: ', p);
-            callback(p == 0);
-          });
-         else
-          callback(true);
-      }
-
-      function click_n() {
-        console.log('clicked');
-        window.focus();
-        this.close();
-      }
-
-      function play_audio(ctx, buffer) {
-        var source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(ctx.destination);
-        source.start(0);
-      }
-
-    script.
-      // user settings
-      var show_notifications = true,
-          mute = false;
-    script.
-      // UI parameters
-      var max_notification_title_len = 30,
-          max_notification_body_len = 35,
-          flashing_interval = 1000,  // duration of a title in ms
-          original_title = $('title').text();
-      init();
-      // context variables
-      var _show = window.Notifications.checkPermission() == 0,
-          actx = new window.AudioContext(); // Web Audio context
-      // load ringtone
-      var ringtone = null;
-      function load_audio(ctx, url) {
-        var request = new XMLHttpRequest();
-        request.open('GET', url, true);
-        request.responseType = 'arraybuffer';
-        // Decode asynchronously
-        request.onload = function() {
-          ctx.decodeAudioData(request.response, function(buf) {
-            ringtone = buf;
-          });
-        }
-        request.send();
-      }
-      load_audio(actx, '/sound/80921__justinbw__buttonchime02up.wav');
-      // generate notification
       function notify(symbol) {
-        if (_show && document[hidden]) {
-          var n = new Notification(symbol + ' alert', {
-              body: 'possible market movement detected from ' + symbol + ' related tweets.',
+        // generate notification
+        if ('on' == getPref('show notifications', 'on') && document[hidden]) {
+          var n = new Notification(symbol + ' Alert', {
+              body: 'a possible market driving event detected from ' + symbol + ' related tweets.',
               tag: symbol
           });
-          n.onclick = click_n;
+          n.onclick = function () {
+            window.focus();
+            console.log('notification clicked');
+            this.close();
+          };
           n.show();
         }
-        if (!mute)
-          play_audio(actx, ringtone);
+        if ('off' == getPref('mute alerts', 'off'))
+          playAudio(audio.ctx, audio.chime);
         flash.flash('alert: ' + symbol);
       }
-      // wire up UI
-      $('#opt-in').click(function() {
-        request_permission(function(t) {
-          _show = t && show_notifications;
-        });
-      });
-      $('#opt-out').click(function() {
-        _show = false;
-      });
-      $('#new-notification').click(function () {notify('test');});
-      $('#ringtone').click(function() {
-        if (!mute) {
-          play_audio(actx, ringtone);
-        }
-      });
+
+      function popFromQueue(sink) {
+        // move last tweet off queue into sink
+        var tweet = $('.twitter-tweet:visible:last');
+        tweet.hide();
+        sink.push(tweet);
+        $('.sink').text(sink.length + ' old tweets').show();
+      }
+
+      function pushIntoFaucet(newTweet, faucet) {
+        faucet.push(newTweet);
+        $('.faucet').text(faucet.length + ' new tweets').show();
+      }
+    script.
+      normalizeApis();
+      
+      var symbol = '#{symbol}',
+          audio = initAudio(),
+          feed = io.connect(document.location.origin + '/' + symbol),
+          reading = false,
+          faucet = [],
+          depth = 4,
+          batch = 1,
+          sink = [];
+      
       // stop flashing title
       $(document).on(visibilityChange, function () {
         if (!document[hidden]) {
-          console.log('focused');
-          flash.stop_and_restore();
+          console.log('visible');
+          flash.restore();
         }
+      })
+      .on('scroll', function () {
+        console.log('scrolled');
+        reading = true;
+        flash.restore();
+      })
+      .click(function () {
+        console.log('viewport clicked');
+        flash.restore();
       });
-    
-    script.
-      // realtime streams
-      var feed = io.connect(document.location.origin + '/' + symbol);
-    
-      feed.on('new announcement', function (data) {
-        console.log(data);
-        
-        setTimeout(function() {
-          $('.announcement').hide();
-          }, 5000);
+      
+      $('.sink').hide().click(function () {
+        console.log('sink clicked');
+        // pop a few tweets from sink
+        var n = batch,
+            q = $('.queue');
+        while (sink.length > 0 && --n >= 0) {
+          var t = sink.pop();
+          t.show();
+          $(this).text(sink.length + ' old tweets');
+        }
+        if (sink.length == 0)
+          $(this).hide();
       });
 
+      $('.faucet').click(function () {
+        console.log('faucet clicked');
+        // flush tweets in faucet
+        var f = $(this),
+            q = $('.queue');
+        while (faucet.length > 0) {
+          var t = faucet.shift();
+          q.prepend(t);
+          f.text(faucet.length + ' new tweets');
+        }
+        twttr.widgets.load();
+        reading = false;
+        f.hide();
+      });
+
+      // realtime feed
       feed.on('new tweet', function (data) {
         console.log(data);
-        $('#tweet-stream').prepend(
-          $(data.html).attr('data-theme', 'dark')
+        var newTweet = $(data.html).attr('data-theme', 'light')
             .attr('data-dnt', 'true')
-            .attr('width', '500')
-        );
-        twttr.widgets.load();
-      });
-      
-      feed.on('new volume', function (data) {
+            .attr('width', '500');
+
+        if ($('.twitter-tweet:visible').length == 0) {
+          // receiving first tweet
+          $('.faucet').hide();
+        } 
+        if (reading) {
+          pushIntoFaucet(newTweet, faucet);
+        } else {
+          if ($('.twitter-tweet:visible').length < depth) {
+            // render directly into queue
+            $('#tweet-stream .queue').prepend(newTweet);
+            twttr.widgets.load();
+          } else {
+            // the queue is full
+            // remove the bottom one from queue
+            popFromQueue(sink);
+            // render the new tweet
+            $('#tweet-stream .queue').prepend(newTweet);
+            twttr.widgets.load();
+          }
+        }
+      })
+      .on('new volume', function (data) {
         console.log(data);
-        $('#volume').text(data.volume);
-        $('#volume-time').text(new Date(data.timestamp));
-      });
-      
-      feed.on('new alert', function (data) {
+      })
+      .on('new alert', function (data) {
         console.log(data);
-        $('#alert').text(new Date(data.timestamp));
-        // notifications
-        notify(data.symbol);
+        notify(symbol);
       });

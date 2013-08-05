@@ -10,6 +10,8 @@ var draftApis = function () {
   draftApis.normalize = function (apis, notify) {
     if (typeof apis == 'string')
       apis = [apis];
+    if (arguments.length == 0)
+      apis = Object.keys(this.apiVendorNames);
 
     var missing = [];
     for (var i in apis) {
@@ -18,6 +20,8 @@ var draftApis = function () {
         var vendorNames = this.apiVendorNames[canonicalName];
         for (var i in vendorNames) {
           window[canonicalName] = window[canonicalName] || window[vendorNames[i]];
+          if (window[canonicalName])
+            break;
         }
       }
       if (!window[canonicalName]) {

@@ -53,7 +53,7 @@ var data = fs.readFile('aapl.tids', {encoding: 'ascii'}, function(err, data) {
     
   setInterval(function() { 
     injectAlert('aapl', Date.now()); 
-    }, 20000);
+    }, 10000);
     
   setInterval(function() { 
     injectVolume('aapl', Math.ceil(Math.random()*100), Date.now()); 
