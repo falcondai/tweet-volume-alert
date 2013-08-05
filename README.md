@@ -15,6 +15,6 @@ use
 3. set environment variables ```$ source setEnv.sh```
 4. execute ```$ node app.js``` for development, or ```$ NODE_ENV=production node app.js``` for production.
 
-Author
+author
 ------
 Falcon Dai @ TwiThinks
