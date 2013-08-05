@@ -57,7 +57,10 @@ app.get('/stream/:symbol', function (req, res) {
     res.redirect('/stream/' + req.params.symbol.toUpperCase());
   else
     res.render('stream.jade', {
-      symbol: req.params.symbol
+      symbol: req.params.symbol,
+      company: config.symbols[req.params.symbol] || req.params.symbol,
+      batchSize: config.uiSettings.batchSize,
+      queueDepth: config.uiSettings.queueDepth
     });
 });
 

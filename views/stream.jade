@@ -42,9 +42,6 @@ html
 
         .queue
           margin-top 40px
-      
-      #dark
-        display none
 
       @media (max-width: 500px)
         #tweet-stream
@@ -66,9 +63,7 @@ html
     #tweet-stream
       .faucet waiting for tweets...
       .queue
-      .sink # of old tweets
-
-    #dark
+      .sink older tweets
 
     script(src='//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js')
     script(src='//platform.twitter.com/widgets.js')
@@ -83,7 +78,7 @@ html
         // generate notification
         if ('on' == getPref('show notifications', 'on') && document[hidden]) {
           var n = new Notification(symbol + ' Alert', {
-              body: 'a possible market driving event detected from ' + symbol + ' related tweets.',
+              body: 'a possible market driving event is detected from #{company} related tweets.',
               tag: symbol
           });
           n.onclick = function () {
@@ -103,7 +98,7 @@ html
         var tweet = $('.twitter-tweet:visible:last');
         tweet.hide();
         sink.push(tweet);
-        $('.sink').text(sink.length + ' old tweets').show();
+        $('.sink').text(sink.length + ' older tweets').show();
       }
 
       function pushIntoFaucet(newTweet, faucet) {
@@ -118,8 +113,8 @@ html
           feed = io.connect(document.location.origin + '/' + symbol),
           reading = false,
           faucet = [],
-          depth = 4,
-          batch = 1,
+          depth = #{queueDepth},
+          batch = #{batchSize},
           sink = [];
       
       // stop flashing title
@@ -147,7 +142,7 @@ html
         while (sink.length > 0 && --n >= 0) {
           var t = sink.pop();
           t.show();
-          $(this).text(sink.length + ' old tweets');
+          $(this).text(sink.length + ' older tweets');
         }
         if (sink.length == 0)
           $(this).hide();

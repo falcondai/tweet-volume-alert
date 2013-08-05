@@ -1,3 +1,4 @@
+// shared configs
 exports.symbols = {
   MSFT: 'Microsoft',
   AAPL: 'Apple',
@@ -11,3 +12,16 @@ exports.symbols = {
   TSLA: 'Tesla'
 };
 
+if ('production' == process.env.NODE_ENV) {
+  exports.uiSettings = {
+    batchSize: 4,
+    queueDepth: 32
+  };
+}
+
+if ('development' == process.env.NODE_ENV) {
+  exports.uiSettings = {
+    batchSize: 1,
+    queueDepth: 4
+  };
+}
