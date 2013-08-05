@@ -19,7 +19,6 @@ function getTweet(tid, callback) {
       .on('end', function() {
         htmlText = JSON.parse(buf).html;
         if (htmlText)
-          console.log(htmlText);
           callback(htmlText);
       })
       .on('error', function(e) {

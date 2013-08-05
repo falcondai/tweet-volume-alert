@@ -25,7 +25,6 @@ html
           width @width - 3px // compensate for embedded tweets size problem
           text-align center
           padding 5px 0 5px 0
-          cursor pointer
           background-color rgba(steelblue, 0.6)
           color white
 
@@ -37,6 +36,7 @@ html
 
         .sink
           display none
+          cursor pointer
           border-top-left-radius 5px
           border-top-right-radius @border-top-left-radius
 
@@ -148,21 +148,6 @@ html
           $(this).hide();
       });
 
-      $('.faucet').click(function () {
-        console.log('faucet clicked');
-        // flush tweets in faucet
-        var f = $(this),
-            q = $('.queue');
-        while (faucet.length > 0) {
-          var t = faucet.shift();
-          q.prepend(t);
-          f.text(faucet.length + ' new tweets');
-        }
-        twttr.widgets.load();
-        reading = false;
-        f.hide();
-      });
-
       // realtime feed
       feed.on('new tweet', function (data) {
         console.log(data);
@@ -172,7 +157,22 @@ html
 
         if ($('.twitter-tweet:visible').length == 0) {
           // receiving first tweet
-          $('.faucet').hide();
+          $('.faucet').hide()
+          .css('cursor', 'pointer')
+          .click(function () {
+            console.log('faucet clicked');
+            // flush tweets in faucet
+            var f = $(this),
+                q = $('.queue');
+            while (faucet.length > 0) {
+              var t = faucet.shift();
+              q.prepend(t);
+              f.text(faucet.length + ' new tweets');
+            }
+            twttr.widgets.load();
+            reading = false;
+            f.hide();
+          });
         } 
         if (reading) {
           pushIntoFaucet(newTweet, faucet);
