@@ -5,7 +5,8 @@
   "main": "app.js",
   "dependencies": {
     "express": "~3.3.4",
-    "socket.io": "~0.9.16"
+    "socket.io": "~0.9.16",
+    "jade": "~0.34.1"
   },
   "devDependencies": {},
   "scripts": {
@@ -21,7 +22,6 @@
     "notification"
   ],
   "author": "Falcon Dai",
-  "license": "BSD",
   "bugs": {
     "url": "https://github.com/falcondai/tweet-volume-alert/issues"
   }

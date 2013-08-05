@@ -10,13 +10,10 @@ following [semantic versioning](http://semver.org/) convention.
 
 use
 ---
-set environment variables via
-```$ source setEnv.sh```
-and then execute
-```$ node app.js```
-for development, or
-```$ NODE_ENV=production node app.js```
-for production.
+1. clone the repo
+2. install all dependency ```$npm install```
+3. set environment variables ```$ source setEnv.sh```
+4. execute ```$ node app.js``` for development, or ```$ NODE_ENV=production node app.js``` for production.
 
 Author
 ------
