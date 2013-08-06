@@ -1,5 +1,5 @@
-var host = (process.env.NODE_ENV == 'development')? 'localhost' : process.env.PRODUCTION_HOST,
-    port = (process.env.NODE_ENV == 'development')? process.env.DEVELOPMENT_PORT : process.env.PRODUCTION_PORT, 
+var host = 'localhost',
+    port = 8000, 
     http = require('http'),
     fs = require('fs');
 
