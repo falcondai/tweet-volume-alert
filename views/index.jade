@@ -74,7 +74,7 @@ html
       ul
         each company, symbol in symbols
           li 
-            a(href='/stream/' + symbol)= company
+            a(href='/stream/' + symbol, target='_blank')= company
 
       | We are adding more to this list, let us know what you want to see next.
 
@@ -95,7 +95,7 @@ html
       
       function updateAlertToggle () {
         var toggle;
-        if (window.AudioContext && getPref('mute alerts', 'off') == 'off')
+        if (window.AudioContext && getPref('play alerts', 'on') == 'on')
           toggle = true;
         else
           toggle = false;
@@ -124,7 +124,7 @@ html
       });
       
       $('.alert.toggle').click(function () {
-        setPref('mute alerts', getPref('mute alerts', 'on') == 'on' ? 'off' : 'on');
+        setPref('play alerts', getPref('play alerts', 'on') == 'on' ? 'off' : 'on');
         updateAlertToggle();
       });
       

@@ -89,7 +89,7 @@ html
           };
           n.show();
         }
-        if ('off' == getPref('mute alerts', 'off'))
+        if ('on' == getPref('play alerts', 'on'))
           playAudio(audio.ctx, audio.chime);
         flash.flash('alert: ' + symbol);
       }
