@@ -28,10 +28,10 @@ function getTweet(tid, callback) {
 }
 
 // middlewares
-if ('development' == app.get('env'))
-  app.use(express.logger('dev'));
-else 
+if ('production' == app.get('env'))
   app.use(express.logger());
+else 
+  app.use(express.logger('dev'));
 
 app.use(require('stylus').middleware(__dirname + '/static'));
 app.use(express.static(__dirname + '/static'))
@@ -109,7 +109,7 @@ app.get('/inject/tweet-id', function (req, res) {
 });
 
 // socket.io config
-if ('development' != process.env.NODE_ENV) {
+if ('production' == process.env.NODE_ENV) {
   io.enable('browser client minification');  // send minified client
   io.enable('browser client etag');          // apply etag caching logic based on version number
   io.enable('browser client gzip');          // gzip the file
@@ -131,6 +131,5 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 // start
-var port = ('development' == process.env.NODE_ENV)? process.env.DEVELOPMENT_PORT: process.env.PRODUCTION_PORT;
-server.listen(port);
-console.log('volume alert listening at port: %s', port);
+server.listen(config.serverSettings.port, 'production' == process.env.NODE_ENV ? 'localhost' : '0.0.0.0');
+console.log('volume alert listening at port: %s', config.serverSettings.port);

@@ -16,3 +16,7 @@ exports.uiSettings = {
   batchSize: 'production' == process.env.NODE_ENV ? 4 : 1,
   queueDepth: 'production' == process.env.NODE_ENV ? 32 : 4
 };
+
+exports.serverSettings = {
+  port: 8000
+};
