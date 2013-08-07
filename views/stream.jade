@@ -79,7 +79,7 @@ html
         // generate notification
         if ('on' == getPref('show notifications', 'on') && document[hidden]) {
           var n = new Notification(symbol + ' Alert', {
-              body: 'a possible market driving event is detected from #{company} related tweets.',
+              body: 'a possible market driving event is detected from #{company}-related tweets.',
               tag: symbol
           });
           n.onclick = function () {
