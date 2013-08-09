@@ -180,8 +180,9 @@ html
             twttr.widgets.load();
             $('body,html').animate({
               scrollTop: 0
-            }, 500);
-            reading = false;
+            }, 500, 'swing', function() { 
+              reading = false; 
+            });
             f.hide();
           });
         } 
