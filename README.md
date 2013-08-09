@@ -10,6 +10,11 @@ key features
 ------------
 - supporting API Draft 0
 
+live instances
+--------------
+production at http://stock.twithinks.com
+development at http://54.235.161.102:8000
+
 use
 ---
 1. clone the repo
