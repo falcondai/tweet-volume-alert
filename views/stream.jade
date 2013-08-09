@@ -53,9 +53,12 @@ html
             width 100%
 
       @media (max-width: 260px)
+        html
+          width 260px
         #tweet-stream
           width 250px
-          padding 5px
+          padding-left 5px
+          padding-right @padding-left
           .faucet
             width @width
           .sink
@@ -89,7 +92,7 @@ html
           };
           n.show();
         }
-        if ('on' == getPref('play alerts', 'on'))
+        if ('on' == getPref('play alerts', 'on') && audio.ready)
           playAudio(audio.ctx, audio.chime);
         flash.flash('alert: ' + symbol);
       }
@@ -125,7 +128,7 @@ html
           flash.restore();
         }
       })
-      .on('scroll', function () {
+      .scroll(function () {
         console.log('scrolled');
         reading = true;
         flash.restore();
@@ -139,12 +142,17 @@ html
         console.log('sink clicked');
         // pop a few tweets from sink
         var n = batch,
-            q = $('.queue');
+            q = $('.queue'),
+            firstOld;
         while (sink.length > 0 && --n >= 0) {
           var t = sink.pop();
+          firstOld = firstOld || t;
           t.show();
           $(this).text(sink.length + ' older tweets');
         }
+        $('body').animate({
+          scrollTop: firstOld.offset().top
+        }, 500);
         if (sink.length == 0)
           $(this).hide();
       });
@@ -168,9 +176,11 @@ html
             while (faucet.length > 0) {
               var t = faucet.shift();
               q.prepend(t);
-              f.text(faucet.length + ' new tweets');
             }
             twttr.widgets.load();
+            $('body').animate({
+              scrollTop: 0
+            }, 500);
             reading = false;
             f.hide();
           });

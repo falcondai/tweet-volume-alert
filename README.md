@@ -13,7 +13,7 @@ key features
 use
 ---
 1. clone the repo
-2. install dependency ```$npm install```
+2. install dependency ```$ npm install```
 3. execute ```$ node app.js``` for development, or ```$ NODE_ENV=production node app.js``` for production.
 
 author
