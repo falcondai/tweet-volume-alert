@@ -150,7 +150,7 @@ html
           t.show();
           $(this).text(sink.length + ' older tweets');
         }
-        $('body').animate({
+        $('body,html').animate({
           scrollTop: firstOld.offset().top
         }, 500);
         if (sink.length == 0)
@@ -178,7 +178,7 @@ html
               q.prepend(t);
             }
             twttr.widgets.load();
-            $('body').animate({
+            $('body,html').animate({
               scrollTop: 0
             }, 500);
             reading = false;
