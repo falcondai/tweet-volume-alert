@@ -76,7 +76,8 @@ html
     script(src='/js/flash.js')
     script(src='/js/utils.js')
     script(src='/js/draftHtml5Apis.js')
-      
+    //- using Google universal analytics, provides ga object
+    include _ga
     script.
       function notify(symbol) {
         // generate notification
@@ -119,23 +120,60 @@ html
           faucet = [],
           depth = #{queueDepth},
           batch = #{batchSize},
-          sink = [];
-      
+          sink = [],
+          tracker,
+          t0 = Date.now(),
+          t1 = t0,
+          checkViewportSizeHandle;
+      // init GA tracker
+      ga(function() {
+        tracker = ga.getByName('t0');
+      });
       // stop flashing title
       $(document).on(visibilityChange, function () {
         if (!document[hidden]) {
-          console.log('visible');
           flash.restore();
+          console.log('visible');
+          ga('send', 'event', {
+            eventCategory: tracker.get('clientId'),
+            eventAction: 'page-hide-for:' + (Date.now() - t1),
+            eventLabel: '/stream/' + symbol,
+          });
+        } else {
+          ga('send', 'event', {
+            eventCategory: tracker.get('clientId'),
+            eventAction: 'page-show-for:' + (Date.now() - t1),
+            eventLabel: '/stream/' + symbol,
+          });
         }
+        t1 = Date.now();
       })
       .scroll(function () {
-        console.log('scrolled');
         reading = true;
         flash.restore();
+        console.log('scrolled');
       })
       .click(function () {
-        console.log('viewport clicked');
         flash.restore();
+        console.log('viewport clicked');
+      });
+      $(window).resize(function () {
+        checkViewportSizeHandle = checkViewportSizeHandle || setTimeout(function () {
+          console.log('resized');
+          ga('send', 'event', {
+            eventCategory: tracker.get('clientId'),
+            eventAction: 'resize:' + $(document).width() + 'x' + $(document).height(),
+            eventLabel: '/stream/' + symbol,
+          });
+          checkViewportSizeHandle = undefined;
+        }, 10000);
+      })
+      .on('beforeunload', function () {
+        ga('send', 'event', {
+          eventCategory: tracker.get('clientId'),
+          eventAction: 'page-open-for:' + (Date.now() - t0),
+          eventLabel: '/stream/' + symbol,
+        });
       });
       
       $('.sink').hide().click(function () {
@@ -156,14 +194,12 @@ html
         if (sink.length == 0)
           $(this).hide();
       });
-
       // realtime feed
       feed.on('new tweet', function (data) {
         console.log(data);
         var newTweet = $(data.html).attr('data-theme', 'light')
             .attr('data-dnt', 'true')
             .attr('width', '500');
-
         if ($('.twitter-tweet:visible').length == 0) {
           // receiving first tweet
           $('.faucet').hide()
@@ -210,13 +246,5 @@ html
         console.log(data);
         notify(symbol);
       });
-      
-      // Google analytics
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-      ga('create', 'UA-43036107-1', 'twithinks.com');
-      ga('send', 'pageview');
 
 </script>

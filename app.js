@@ -46,7 +46,8 @@ app.use('/inject', function (req, res, next) {
 // views
 app.get('/', function (req, res) {
   res.render('index.jade', {
-    symbols: config.symbols
+    symbols: config.symbols,
+    ga: config.googleAnalytics,
   });
 });
 
@@ -58,8 +59,9 @@ app.get('/stream/:symbol', function (req, res) {
     res.render('stream.jade', {
       symbol: req.params.symbol,
       company: config.symbols[req.params.symbol] || req.params.symbol,
-      batchSize: config.uiSettings.batchSize,
-      queueDepth: config.uiSettings.queueDepth
+      batchSize: config.ui.batchSize,
+      queueDepth: config.ui.queueDepth,
+      ga: config.googleAnalytics,
     });
 });
 
@@ -131,5 +133,5 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 
 // start
-server.listen(config.serverSettings.port, 'production' == process.env.NODE_ENV ? 'localhost' : '0.0.0.0');
-console.log('volume alert listening at port: %s', config.serverSettings.port);
+server.listen(config.server.port, 'production' == process.env.NODE_ENV ? 'localhost' : '0.0.0.0');
+console.log('volume alert listening at port: %s', config.server.port);
