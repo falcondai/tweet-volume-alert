@@ -109,11 +109,29 @@ html
     script.
       normalizeApis();
       var audio = initAudio(),
-          tracker;
-      
+          tracker,
+          t0 = Date.now();
       // init GA tracker
       ga(function() {
         tracker = ga.getByName('t0');
+      });
+      $(window).on('beforeunload', function () {
+        ga('send', 'event', {
+          eventCategory: tracker.get('clientId'),
+          eventAction: 'page-open-for:' + (Date.now() - t0),
+          eventLabel: '/',
+        });
+        // log alert settings
+        ga('send', 'event', {
+          eventCategory: tracker.get('clientId'),
+          eventAction: 'notification-setting:' + getPref('show notifications', 'on'),
+          eventLabel: '/',
+        });
+        ga('send', 'event', {
+          eventCategory: tracker.get('clientId'),
+          eventAction: 'chime-setting:' + getPref('play chimes', 'on'),
+          eventLabel: '/',
+        });
       });
       
       // wire up UI

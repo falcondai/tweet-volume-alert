@@ -84,14 +84,20 @@ html
         if ('on' == getPref('show notifications', 'on') && document[hidden]) {
           var n = new Notification(symbol + ' Alert', {
               body: 'a possible market driving event is detected from #{company}-related tweets.',
-              tag: symbol
+              tag: symbol,
           });
           n.onclick = function () {
             window.focus();
             console.log('notification clicked');
             this.close();
+            ga('send', 'event', {
+              eventCategory: tracker.get('clientId'),
+              eventAction: 'notification-click-after:' + (Date.now() - tNotify),
+              eventLabel: '/stream/' + symbol,
+            });
           };
           n.show();
+          tNotify = Date.now();
         }
         if ('on' == getPref('play alerts', 'on') && audio.ready)
           playAudio(audio.ctx, audio.chime);
@@ -124,7 +130,8 @@ html
           tracker,
           t0 = Date.now(),
           t1 = t0,
-          checkViewportSizeHandle;
+          checkViewportSizeHandle,
+          tNotify;
       // init GA tracker
       ga(function() {
         tracker = ga.getByName('t0');
