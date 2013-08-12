@@ -121,7 +121,7 @@ html
       
       var symbol = '#{symbol}',
           audio = initAudio(),
-          feed = io.connect(document.location.origin + '/' + symbol),
+          feed = io.connect(document.location.origin + '/feed'),
           reading = false,
           faucet = [],
           depth = #{queueDepth},
@@ -135,6 +135,67 @@ html
       // init GA tracker
       ga(function() {
         tracker = ga.getByName('t0');
+      });
+      // realtime feed
+      feed.on('connect', function () {
+        console.log('connected to /feed');
+        feed.emit('subscribe', {
+          symbol: symbol
+        });
+        feed.on('last inject', function (data) {
+          console.log('backend last injected at: ' + ((Date.now() - data.timestamp) / 1000) + 's ago');
+        })
+        .on('new tweet', function (data) {
+          console.log(data);
+          var newTweet = $(data.html).attr('data-theme', 'light')
+              .attr('data-dnt', 'true')
+              .attr('width', '500');
+          if ($('.twitter-tweet:visible').length == 0) {
+            // receiving first tweet
+            $('.faucet').hide()
+            .css('cursor', 'pointer')
+            .click(function () {
+              console.log('faucet clicked');
+              // flush tweets in faucet
+              var f = $(this),
+                  q = $('.queue');
+              while (faucet.length > 0) {
+                var t = faucet.shift();
+                q.prepend(t);
+              }
+              twttr.widgets.load();
+              $('body,html').animate({
+                scrollTop: 0
+              }, 500, 'swing', function() { 
+                reading = false; 
+              });
+              f.hide();
+            });
+          } 
+          if (reading) {
+            pushIntoFaucet(newTweet, faucet);
+          } else {
+            if ($('.twitter-tweet:visible').length < depth) {
+              // render directly into queue
+              $('#tweet-stream .queue').prepend(newTweet);
+              twttr.widgets.load();
+            } else {
+              // the queue is full
+              // remove the bottom one from queue
+              popFromQueue(sink);
+              // render the new tweet
+              $('#tweet-stream .queue').prepend(newTweet);
+              twttr.widgets.load();
+            }
+          }
+        })
+        .on('new volume', function (data) {
+          console.log(data);
+        })
+        .on('new alert', function (data) {
+          console.log(data);
+          notify(symbol);
+        });
       });
       // stop flashing title
       $(document).on(visibilityChange, function () {
@@ -200,58 +261,6 @@ html
         }, 500);
         if (sink.length == 0)
           $(this).hide();
-      });
-      // realtime feed
-      feed.on('new tweet', function (data) {
-        console.log(data);
-        var newTweet = $(data.html).attr('data-theme', 'light')
-            .attr('data-dnt', 'true')
-            .attr('width', '500');
-        if ($('.twitter-tweet:visible').length == 0) {
-          // receiving first tweet
-          $('.faucet').hide()
-          .css('cursor', 'pointer')
-          .click(function () {
-            console.log('faucet clicked');
-            // flush tweets in faucet
-            var f = $(this),
-                q = $('.queue');
-            while (faucet.length > 0) {
-              var t = faucet.shift();
-              q.prepend(t);
-            }
-            twttr.widgets.load();
-            $('body,html').animate({
-              scrollTop: 0
-            }, 500, 'swing', function() { 
-              reading = false; 
-            });
-            f.hide();
-          });
-        } 
-        if (reading) {
-          pushIntoFaucet(newTweet, faucet);
-        } else {
-          if ($('.twitter-tweet:visible').length < depth) {
-            // render directly into queue
-            $('#tweet-stream .queue').prepend(newTweet);
-            twttr.widgets.load();
-          } else {
-            // the queue is full
-            // remove the bottom one from queue
-            popFromQueue(sink);
-            // render the new tweet
-            $('#tweet-stream .queue').prepend(newTweet);
-            twttr.widgets.load();
-          }
-        }
-      })
-      .on('new volume', function (data) {
-        console.log(data);
-      })
-      .on('new alert', function (data) {
-        console.log(data);
-        notify(symbol);
       });
 
 </script>

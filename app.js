@@ -4,7 +4,8 @@ var http = require('http'),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server),
     config = require('./config'),
-    tLastInject = 0;
+    tLastInject = 0,
+    feed = io.of('/feed');
 
 // utility functions
 function getTweet(tid, callback) {
@@ -40,6 +41,7 @@ app.use(express.static(__dirname + '/static'))
 app.use('/inject', function (req, res, next) {
   // check symbol query parameter
   if (req.query.symbol) {
+    req.query.symbol = req.query.symbol.toUpperCase();
     next();
     // keep track of last successful injection
     tLastInject = Date.now();
@@ -73,8 +75,7 @@ app.get('/stream/:symbol', function (req, res) {
 // inject APIs
 app.get('/inject/alert', function (req, res) {
   // GET /inject/alert?symbol=<company_symbol>&time=<timestamp_in_seconds>
-  req.query.symbol = req.query.symbol.toUpperCase();
-  io.of('/' + req.query.symbol).emit('new alert', {
+  feed.in(req.query.symbol).emit('new alert', {
     symbol: req.query.symbol,
     timestamp: +req.query.time * 1000,
   });
@@ -83,8 +84,7 @@ app.get('/inject/alert', function (req, res) {
 
 app.get('/inject/per-minute-volume', function (req, res) {
   // GET /inject/per-minute-volume?symbol=<company_symbol>&volume=<count>&start_time=<timestamp_in_seconds>
-  req.query.symbol = req.query.symbol.toUpperCase();
-  io.of('/' + req.query.symbol).emit('new volume', {
+  feed.in(req.query.symbol).emit('new volume', {
     volume: +req.query.volume,
     timestamp: +req.query.start_time * 1000,
   });
@@ -93,9 +93,8 @@ app.get('/inject/per-minute-volume', function (req, res) {
 
 app.get('/inject/tweet-id', function (req, res) {
   // GET /inject/tweet-id?symbol=<company_symbol>&tweet_id=<id>
-  req.query.symbol = req.query.symbol.toUpperCase();
   getTweet(req.query.tweet_id, function (tweetHtml) {
-    io.of('/' + req.query.symbol).emit('new tweet', {
+    feed.in(req.query.symbol).emit('new tweet', {
       tid: req.query.tweet_id,
       html: tweetHtml,
     });
@@ -120,6 +119,19 @@ if ('production' == process.env.NODE_ENV) {
     , 'jsonp-polling'
   ]);
 }
+
+// use rooms to handle feed subscriptions
+feed.on('connection', function (socket) {
+  socket.emit('last inject', {
+    timestamp: tLastInject,
+  });
+  socket.on('subscribe', function (data) {
+    socket.join(data.symbol);
+  })
+  .on('unsubcribe', function (data) {
+    socket.leave(data.symbol);
+  });
+});
 
 // template config
 app.set('views', __dirname + '/views');

@@ -1,5 +1,5 @@
 var host = 'localhost',
-    port = require('../config').serverSettings.port, 
+    port = require('../config').server.port, 
     http = require('http'),
     fs = require('fs');
 
