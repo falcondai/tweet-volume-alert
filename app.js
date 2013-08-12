@@ -3,7 +3,8 @@ var http = require('http'),
     app = express(),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server),
-    config = require('./config');
+    config = require('./config'),
+    tLastInject = 0;
 
 // utility functions
 function getTweet(tid, callback) {
@@ -38,9 +39,13 @@ app.use(express.static(__dirname + '/static'))
 
 app.use('/inject', function (req, res, next) {
   // check symbol query parameter
-  if (req.query.symbol)
+  if (req.query.symbol) {
     next();
-  res.send(400);
+    // keep track of last successful injection
+    tLastInject = Date.now();
+  } else {
+    res.send(400);
+  }
 });
 
 // views
@@ -68,43 +73,31 @@ app.get('/stream/:symbol', function (req, res) {
 // inject APIs
 app.get('/inject/alert', function (req, res) {
   // GET /inject/alert?symbol=<company_symbol>&time=<timestamp_in_seconds>
-  if (!req.query.symbol) {
-    res.send(400);
-    return ;
-  }
   req.query.symbol = req.query.symbol.toUpperCase();
   io.of('/' + req.query.symbol).emit('new alert', {
     symbol: req.query.symbol,
-    timestamp: +req.query.time * 1000
+    timestamp: +req.query.time * 1000,
   });
   res.send(200);
 });
 
 app.get('/inject/per-minute-volume', function (req, res) {
   // GET /inject/per-minute-volume?symbol=<company_symbol>&volume=<count>&start_time=<timestamp_in_seconds>
-  if (!req.query.symbol) {
-    res.send(400);
-    return ;
-  }
   req.query.symbol = req.query.symbol.toUpperCase();
   io.of('/' + req.query.symbol).emit('new volume', {
     volume: +req.query.volume,
-    timestamp: +req.query.start_time * 1000
+    timestamp: +req.query.start_time * 1000,
   });
   res.send(200);
 });
 
 app.get('/inject/tweet-id', function (req, res) {
   // GET /inject/tweet-id?symbol=<company_symbol>&tweet_id=<id>
-  if (!req.query.symbol) {
-    res.send(400);
-    return ;
-  }
   req.query.symbol = req.query.symbol.toUpperCase();
   getTweet(req.query.tweet_id, function (tweetHtml) {
     io.of('/' + req.query.symbol).emit('new tweet', {
       tid: req.query.tweet_id,
-      html: tweetHtml
+      html: tweetHtml,
     });
   });
   res.send(200);

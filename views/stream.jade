@@ -99,7 +99,7 @@ html
           n.show();
           tNotify = Date.now();
         }
-        if ('on' == getPref('play alerts', 'on') && audio.ready)
+        if ('on' == getPref('play chimes', 'on') && audio.ready)
           playAudio(audio.ctx, audio.chime);
         flash.flash('alert: ' + symbol);
       }
