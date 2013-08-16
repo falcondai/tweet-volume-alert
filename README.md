@@ -4,7 +4,7 @@ Frontend for TwiThinks tweet-based event detection platform.
 
 current release
 ---------------
-**0.1.0-alpha** (following [semantic versioning](http://semver.org/) convention)
+**0.1.1-alpha** (following [semantic versioning](http://semver.org/) convention)
 
 key features
 ------------
