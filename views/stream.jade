@@ -13,6 +13,8 @@ html
         padding 0
         font-family 'Droid Sans', sans-serif
         background linear-gradient(to right, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.05) 20%,rgba(0,0,0,0.05) 80%,rgba(0,0,0,0.1) 100%), url('/img/noise.png'); 
+        &.alert
+          background linear-gradient(to right, rgba(255,0,0,0.2) 0%,rgba(255,0,0,0.05) 30%,rgba(255,0,0,0.05) 70%,rgba(255,0,0,0.2) 100%), url('/img/noise.png'); 
 
       blockquote.twitter-tweet 
         display none
@@ -28,6 +30,8 @@ html
           padding 5px 0 5px 0
           background-color rgba(steelblue, 0.6)
           color white
+          &.alert
+            background-color rgba(240, 100, 100, 0.6)
 
         .faucet
           position fixed
@@ -194,13 +198,13 @@ html
         })
         .on('new alert', function (data) {
           console.log(data);
+          $('body,.faucet,.sink').toggleClass('alert', true);
           notify(symbol);
         });
       });
       // stop flashing title
       $(document).on(visibilityChange, function () {
         if (!document[hidden]) {
-          flash.restore();
           console.log('visible');
           ga('send', 'event', {
             eventCategory: tracker.get('clientId'),
@@ -219,10 +223,12 @@ html
       .scroll(function () {
         reading = true;
         flash.restore();
+        $('body,.faucet,.sink').toggleClass('alert', false);
         console.log('scrolled');
       })
       .click(function () {
         flash.restore();
+        $('body,.faucet,.sink').toggleClass('alert', false);
         console.log('viewport clicked');
       });
       $(window).resize(function () {
@@ -256,7 +262,7 @@ html
           t.show();
           $(this).text(sink.length + ' older tweets');
         }
-        $('body,html').animate({
+        $('body,.faucet,.sink,html').animate({
           scrollTop: firstOld.offset().top
         }, 500);
         if (sink.length == 0)
