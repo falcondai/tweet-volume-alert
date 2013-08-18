@@ -52,10 +52,14 @@ app.use('/inject', function (req, res, next) {
 
 // views
 app.get('/', function (req, res) {
-  res.render('index.jade', {
+  res.render('index', {
     symbols: config.symbols,
     ga: config.googleAnalytics,
   });
+});
+
+app.get('/splash', function (req, res) {
+  res.render('splash');
 });
 
 app.get('/stream/:symbol', function (req, res) {
@@ -63,7 +67,7 @@ app.get('/stream/:symbol', function (req, res) {
     // redirect user to the canonical URL
     res.redirect('/stream/' + req.params.symbol.toUpperCase());
   else
-    res.render('stream.jade', {
+    res.render('stream', {
       symbol: req.params.symbol,
       company: config.symbols[req.params.symbol] || req.params.symbol,
       batchSize: config.ui.batchSize,
