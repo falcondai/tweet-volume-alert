@@ -4,8 +4,10 @@ var http = require('http'),
     server = require('http').createServer(app),
     io = require('socket.io').listen(server),
     config = require('./config'),
-    tLastInject = 0,
-    feed = io.of('/feed');
+    tLastInject,
+    feed = io.of('/feed'),
+    email = require('./email'),
+    time = require('time')(Date);
 
 // utility functions
 function getTweet(tid, callback) {
@@ -79,9 +81,21 @@ app.get('/stream/:symbol', function (req, res) {
 // inject APIs
 app.get('/inject/alert', function (req, res) {
   // GET /inject/alert?symbol=<company_symbol>&time=<timestamp_in_seconds>
+
+  var issueTime = new Date();
+  issueTime.setTimezone('America/New_York');
+
   feed.in(req.query.symbol).emit('new alert', {
     symbol: req.query.symbol,
     timestamp: +req.query.time * 1000,
+  });
+  email.sendAlert({
+    symbol: req.query.symbol,
+    company: config.symbols[req.query.symbol],
+    issueTime: issueTime.toString(),
+    url: ('production' == process.env.NODE_ENV ? 'http://stock.twithinks.com' : 'http://54.235.161.102:8000') + '/stream/' + req.query.symbol,
+  }, function(err, res) {
+    console.log(err || res);
   });
   res.send(200);
 });
@@ -126,9 +140,11 @@ if ('production' == process.env.NODE_ENV) {
 
 // use rooms to handle feed subscriptions
 feed.on('connection', function (socket) {
-  socket.emit('last inject', {
-    timestamp: tLastInject,
-  });
+  if (tLastInject) {
+    socket.emit('last inject', {
+      timestamp: tLastInject,
+    });
+  }
   socket.on('subscribe', function (data) {
     socket.join(data.symbol);
   })

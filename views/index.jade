@@ -8,10 +8,14 @@ html
       @css {
         @import url(http://fonts.googleapis.com/css?family=Droid+Sans|Roboto+Condensed:300,400);
       }
+      
+      $font-base = 'Droid Sans', 'Ubuntu', Arial, sans-serif 
+      $font-heading = 'Roboto Condensed', Helvetica, sans-serif
+      
       body
-        font-family 'Droid Sans', sans-serif 
+        font-family $font-base
       h1, h2
-        font-family 'Roboto Condensed', sans-serif
+        font-family $font-heading
         font-weight 300
       .overview
         font-size 1.2em 
@@ -20,8 +24,8 @@ html
       abbr
         border-bottom 1px dotted
         cursor help
-      .button, .toggle
-        display inline-block
+      .toggle, #try-chime
+        font-family $font-base
         padding 5px
         margin 5px
         border 2px solid #666
@@ -30,7 +34,7 @@ html
       .toggle.on
         background-color steelblue
         color white
-      span.button
+      #try-chime
         margin 0
         padding 2px
       a
@@ -68,8 +72,8 @@ html
         span.button#try-chime chime
         |  to hear the DING for event alerts. (We are always looking for better chimes, let us know if you want to make us one!)
 
-      .notification.toggle Toggle Desktop Notifications
-      .chime.toggle Toggle Chime
+      button.notification.toggle Toggle Desktop Notifications
+      button.chime.toggle Toggle Chime
 
     section 
       h2 Available stocks

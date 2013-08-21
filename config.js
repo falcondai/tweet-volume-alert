@@ -24,4 +24,4 @@ exports.server = {
 exports.googleAnalytics = {
   code: 'production' == process.env.NODE_ENV ? 'UA-43036107-1' : 'UA-43036107-2',
   domain: 'production' == process.env.NODE_ENV ? 'stock.twithinks.com' : 'none',
-}
+};
