@@ -11,6 +11,7 @@ var nodemailer = require('nodemailer'),
 
 function send(subject, html, callback) {
   var mail = {
+      from: credentials.from,
       replyTo: credentials.replyToEmail,
       subject: subject,
       generateTextFromHTML: true,

@@ -95,7 +95,7 @@ app.get('/inject/alert', function (req, res) {
     issueTime: issueTime.toString(),
     url: ('production' == process.env.NODE_ENV ? 'http://stock.twithinks.com' : 'http://54.235.161.102:8000') + '/stream/' + req.query.symbol,
   }, function(err, res) {
-    console.log(err || res);
+    console.log('email status: ' + (err || res));
   });
   res.send(200);
 });
