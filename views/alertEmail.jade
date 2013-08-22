@@ -5,5 +5,11 @@ div A possible event is detected for
   b #{issueTime}
   if injectSource
     p (injected from #{injectSource})
-div Check out #{company}'s real-time tweets at: 
-  a(href=url) #{url}
+div Check out #{company}-related tweets and news:
+  ul
+    li 
+      a(href=url) TwiThink's real-time tweet stream
+    li
+      a(href='https://twitter.com/search?q=' + encodeURIComponent(company)) Twitter search
+    li
+      a(href!='https://www.google.com/search?hl=en&gl=us&tbm=nws&q=' + encodeURIComponent(company)) Google news search
