@@ -94,8 +94,9 @@ app.get('/inject/alert', function (req, res) {
     company: config.symbols[req.query.symbol],
     issueTime: issueTime.toString(),
     url: ('production' == process.env.NODE_ENV ? 'http://stock.twithinks.com' : 'http://54.235.161.102:8000') + '/stream/' + req.query.symbol,
+    injectSource: 'production' == process.env.NODE_ENV ? undefined : req.ip,
   }, function(err, res) {
-    console.log('email status: ' + (err || res));
+    console.log('email status: ', err || res);
   });
   res.send(200);
 });

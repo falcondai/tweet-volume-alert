@@ -3,5 +3,7 @@ div A possible event is detected for
   b #{symbol} (#{company})
   |  at 
   b #{issueTime}
-div Check out more at: 
+  if injectSource
+    p (injected from #{injectSource})
+div Check out #{company}'s real-time tweets at: 
   a(href=url) #{url}
