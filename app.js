@@ -93,7 +93,7 @@ app.get('/inject/alert', function (req, res) {
     symbol: req.query.symbol,
     company: config.symbols[req.query.symbol],
     issueTime: issueTime.toString(),
-    url: ('production' == process.env.NODE_ENV ? 'http://stock.twithinks.com' : 'http://54.235.161.102:8000') + '/stream/' + req.query.symbol,
+    rootUrl: 'production' == process.env.NODE_ENV ? 'http://stock.twithinks.com' : 'http://54.235.161.102:8000',
     injectSource: 'production' == process.env.NODE_ENV ? undefined : req.ip,
   }, function(err, res) {
     console.log('email status: ', err || res);

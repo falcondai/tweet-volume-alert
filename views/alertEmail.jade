@@ -7,8 +7,8 @@ div A possible event is detected for
     p (injected from #{injectSource})
 div Check out #{company}-related tweets and news:
   ul
-    li 
-      a(href=url) TwiThink's real-time tweet stream
+    li
+      a(href=rootUrl + '/stream/' + symbol) TwiThink's real-time tweet stream
     li
       a(href='https://twitter.com/search?q=' + encodeURIComponent(company)) Twitter search
     li

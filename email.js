@@ -28,7 +28,7 @@ function send(subject, html, callback) {
 }
 
 function sendAlert(fields, callback) {
-  jade.renderFile('views/alertEmail.jade', fields, function (err, html) {
+  jade.renderFile(__dirname + '/views/alertEmail.jade', fields, function (err, html) {
     send('TwiThinks: ' + fields.symbol +' Alert', html, callback);
   });
 }
