@@ -5,6 +5,9 @@ div A possible event is detected for
   b #{issueTime}
   if injectSource
     p (injected from #{injectSource})
+if salientTweet
+  p This tweet seems most salient:
+  != salientTweet
 div Check out #{company}-related tweets and news:
   ul
     li

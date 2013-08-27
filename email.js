@@ -29,6 +29,9 @@ function send(subject, html, callback) {
 
 function sendAlert(fields, callback) {
   jade.renderFile(__dirname + '/views/alertEmail.jade', fields, function (err, html) {
+    if ('production' != process.env.NODE_ENV) {
+      console.log('rendered email body:\n', html);
+    }
     send('TwiThinks: ' + fields.symbol +' Alert', html, callback);
   });
 }

@@ -80,8 +80,9 @@ app.get('/stream/:symbol', function (req, res) {
 
 // inject APIs
 app.get('/inject/alert', function (req, res) {
-  // GET /inject/alert?symbol=<company_symbol>&time=<timestamp_in_seconds>
+  // GET /inject/alert?symbol=<company_symbol>&time=<timestamp_in_seconds>&tweet_id=<id>
 
+  // using the frontend server receive time as issue time
   var issueTime = new Date();
   issueTime.setTimezone('America/New_York');
 
@@ -89,15 +90,24 @@ app.get('/inject/alert', function (req, res) {
     symbol: req.query.symbol,
     timestamp: +req.query.time * 1000,
   });
-  email.sendAlert({
-    symbol: req.query.symbol,
-    company: config.symbols[req.query.symbol],
-    issueTime: issueTime.toString(),
-    rootUrl: 'production' == process.env.NODE_ENV ? 'http://stock.twithinks.com' : 'http://54.235.161.102:8000',
-    injectSource: 'production' == process.env.NODE_ENV ? undefined : req.ip,
-  }, function(err, res) {
-    console.log('email status: ', err || res);
-  });
+  function sendEmail(salientTweetHtml) {
+    email.sendAlert({
+      symbol: req.query.symbol,
+      company: config.symbols[req.query.symbol],
+      issueTime: issueTime.toString(),
+      rootUrl: 'production' == process.env.NODE_ENV ? 'http://stock.twithinks.com' : 'http://54.235.161.102:8000',
+      injectSource: 'production' == process.env.NODE_ENV ? undefined : req.ip,
+      salientTweet: salientTweetHtml,
+    }, function(err, res) {
+      console.log('email status: ', err || res);
+    });
+  }
+  if (req.query.tweet_id) {
+    getTweet(req.query.tweet_id, sendEmail);
+  } else {
+    sendEmail();
+  }
+
   res.send(200);
 });
 
