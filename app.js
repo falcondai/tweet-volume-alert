@@ -7,7 +7,10 @@ var http = require('http'),
     tLastInject,
     feed = io.of('/feed'),
     email = require('./email'),
-    time = require('time')(Date);
+    time = require('time')(Date),
+    cache = {
+      tweets: {},
+    };
 
 // utility functions
 function getTweet(tid, callback) {
@@ -31,6 +34,12 @@ function getTweet(tid, callback) {
   });
 }
 
+// initialize cache
+// cyclic buffer, queue depth set by config.ui.queueDepth
+for (var symbol in config.symbols) {
+  cache.tweets[symbol] = [];
+}
+
 // middlewares
 if ('production' == app.get('env'))
   app.use(express.logger());
@@ -48,7 +57,8 @@ app.use('/inject', function (req, res, next) {
     // keep track of last successful injection
     tLastInject = Date.now();
   } else {
-    res.send(400);
+    // symbol parameter is required
+    res.send(400, 'symbol parameter is missing.');
   }
 });
 
@@ -123,10 +133,18 @@ app.get('/inject/per-minute-volume', function (req, res) {
 app.get('/inject/tweet-id', function (req, res) {
   // GET /inject/tweet-id?symbol=<company_symbol>&tweet_id=<id>
   getTweet(req.query.tweet_id, function (tweetHtml) {
-    feed.in(req.query.symbol).emit('new tweet', {
+    var t = {
       tid: req.query.tweet_id,
       html: tweetHtml,
-    });
+    }
+    feed.in(req.query.symbol).emit('new tweet', t);
+
+    // enqueue into cache
+    var q = cache.tweets[req.query.symbol];
+    if (q.length == config.ui.queueDepth) {
+      q.shift();
+    }
+    q.push(t);
   });
   res.send(200);
 });
@@ -157,6 +175,10 @@ feed.on('connection', function (socket) {
     });
   }
   socket.on('subscribe', function (data) {
+    // send cached tweets
+    for (var i in cache.tweets[data.symbol]) {
+      socket.emit('new tweet', cache.tweets[data.symbol][i]);
+    }
     socket.join(data.symbol);
   })
   .on('unsubcribe', function (data) {

@@ -2,13 +2,13 @@ TwiThinks Tweet Volume Alert Frontend Service
 =============================================
 Frontend for TwiThinks tweet-based event detection platform.
 
-current release
----------------
-**0.1.1-alpha** (following [semantic versioning](http://semver.org/) convention)
-
 key features
 ------------
-- supporting API Draft 0
+- supporting [API Draft 0](https://trello.com/c/YqmLu2fZ/46-api-draft-0)
+- websocket (with fallbacks) per-stock feed subscription
+- email alert delivery 
+- recent tweets cache
+- basic backend health monitoring
 
 live instances
 --------------
