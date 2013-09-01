@@ -39,7 +39,7 @@ function injectAlert(symbol, time) {
   });
 }
 
-var data = fs.readFile('aapl.tids', {encoding: 'ascii'}, function(err, data) {
+fs.readFile('aapl.tids', {encoding: 'ascii'}, function(err, data) {
   var tids = data.split('\n'),
       n = tids.length - 1,
       idx = 0;
@@ -51,9 +51,9 @@ var data = fs.readFile('aapl.tids', {encoding: 'ascii'}, function(err, data) {
     idx = (idx + 1) % n;
     }, 1000);
     
-  // setInterval(function() { 
-  //   injectAlert('aapl', Date.now()); 
-  //   }, 10000);
+  setInterval(function() { 
+    injectAlert('aapl', Date.now()); 
+    }, 10000);
     
   setInterval(function() { 
     injectVolume('aapl', Math.ceil(Math.random()*100), Date.now()); 

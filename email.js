@@ -32,7 +32,7 @@ function sendAlert(fields, callback) {
     if ('production' != process.env.NODE_ENV) {
       console.log('rendered email body:\n', html);
     }
-    send('TwiThinks: ' + fields.symbol +' Alert', html, callback);
+    send(fields.symbol +' Event Alert | TwiThinks', html, callback);
   });
 }
 
