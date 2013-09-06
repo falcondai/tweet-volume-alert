@@ -93,7 +93,7 @@ app.get('/inject/alert', function (req, res) {
   // GET /inject/alert?symbol=<company_symbol>&time=<timestamp_in_seconds>&tweet_id=<id>
 
   // using the frontend server receive time as issue time
-  var issueTime = new Date();
+  var issueTime = new Date(+req.query.time * 1000);
   issueTime.setTimezone('America/New_York');
 
   feed.in(req.query.symbol).emit('new alert', {
@@ -105,8 +105,7 @@ app.get('/inject/alert', function (req, res) {
       symbol: req.query.symbol,
       company: config.symbols[req.query.symbol],
       issueTime: issueTime.toString(),
-      rootUrl: 'production' == process.env.NODE_ENV ? 'http://stock.twithinks.com' : 'http://54.235.161.102:8000',
-      injectSource: 'production' == process.env.NODE_ENV ? undefined : req.ip,
+      rootUrl: 'http://localhost:8000',
       salientTweet: salientTweetHtml,
     }, function(err, res) {
       console.log('email status: ', err || res);
