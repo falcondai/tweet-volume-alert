@@ -39,27 +39,57 @@ function injectAlert(symbol, time, tid) {
   });
 }
 
+
+
 fs.readFile('msft.good.csv', {encoding: 'ascii'}, function(err, data) {
   var tids = data.split('\n'),
       n = tids.length - 1,
-      idx = 0;
+      idx = 0,
+      next;
   console.log('loaded %d tweet ids', n);
   console.log('start injecting to http://%s:%s', host, port);
-  
-  var next = setInterval(function() { 
-    injectTweet('msft', tids[idx].split(',')[0]); 
-    if (++idx > n) {
-      clearInterval(next);
+    
+  process.stdin.setEncoding('utf8');
+  process.stdin.resume();
+
+  process.stdin.on('data', function (chunk) {
+    console.log('... got:', chunk.length, chunk);
+    switch (chunk[0]) {
+      case '\n':
+        if (idx > n) {
+          console.log('injected all tweets');
+        } else {
+          injectTweet('msft', tids[idx].split(',')[0]); 
+          ++idx;
+        }
+        break;
+      case 's':
+        next = setInterval(function() { 
+          injectTweet('msft', tids[idx].split(',')[0]); 
+          if (++idx > n) {
+            clearInterval(next);
+            console.log('injected all tweets');
+          }
+        }, 2 * 1000);
+        console.log('playing stream');
+        break;
+      case 'p':
+        if (next) {
+          clearInterval(next);
+        }
+        console.log('paused stream');
+        break;
+      case 'r':
+        idx = 0;
+        console.log('tweet index reset');
+        break;
+      case 'a':
+        // timestamp in ms 1377262899697 Aug.23rd
+        injectAlert('msft', 1377262899697, '370893599707123712');
+      default:
+        break;
     }
-  }, 2 * 1000);
-    
-  setTimeout(function() { 
-    // timestamp in ms 1377262899697 Aug.23rd
-    injectAlert('msft', 1377262899697, '370893599707123712'); 
-    }, 10 * 1000);
-    
-  // setTimeout(function() { 
-  //   injectVolume('msft', Math.ceil(Math.random()*100), Date.now()); 
-  //   }, 8000);
+  });
+  
 });
 
