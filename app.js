@@ -34,12 +34,6 @@ function getTweet(tid, callback) {
   });
 }
 
-// initialize cache
-// cyclic buffer, queue depth set by config.ui.queueDepth
-for (var symbol in config.symbols) {
-  cache.tweets[symbol] = [];
-}
-
 // middlewares
 if ('production' == app.get('env'))
   app.use(express.logger());
@@ -140,6 +134,9 @@ app.get('/inject/tweet-id', function (req, res) {
     feed.in(req.query.symbol).emit('new tweet', t);
 
     // enqueue into cache
+    if (cache.tweets[req.query.symbol] == undefined) {
+      cache.tweets[req.query.symbol] = [];
+    }
     var q = cache.tweets[req.query.symbol];
     if (q.length == config.ui.queueDepth) {
       q.shift();
